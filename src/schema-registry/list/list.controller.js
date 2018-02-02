@@ -94,7 +94,8 @@ var SubjectListCtrl = function ($scope, $rootScope, $log, $mdMedia, SchemaRegist
             // });
 
         },function(data){
-            $log.info("error:"+data)
+           	schema.requested = false;
+		 $log.info("error:"+data)
         });
 
         $log.info("id:"+schema.id);
