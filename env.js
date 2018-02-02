@@ -1,7 +1,7 @@
 var clusters = [
   {
     NAME: "dev",
-    SCHEMA_REGISTRY: "http://g1-bdp-hdp-23.dns.guazi.com:18081",
+    SCHEMA_REGISTRY: "http://localhost:8080",
     COLOR: "red", // optional
     allowGlobalConfigChanges: true, // optional
     allowSchemaDeletion: true  // Supported for Schema Registry version >= 3.3.0 
