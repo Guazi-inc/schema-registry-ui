@@ -16,12 +16,12 @@
       <i class="fa fa-search" aria-hidden="true" style="right: 26px;font-size: 16px;position: absolute;top: 20px;color:#ddd"></i>
     <md-list flex>
       <md-list-item class="md-2-line shemaslistitem"
-                    dir-paginate="schema in allSchemas | orderBy:'-schema.length' | filter : search | itemsPerPage: itemsPerPage"
+                    dir-paginate="schema in allSchemas | filter : search | itemsPerPage: pagination.itemsPerPage"
                     href="#/cluster/{{cluster}}/schema/{{schema.subjectName}}/version/{{schema.version}}"
                     aria-label="{{schema.subjectName}}"
                     style="border-bottom: 1px solid rgba(0, 0, 0, .1)"
                     ng-class="{ 'selectedListItem': schema.subjectName == subjectObject.subjectName }">
-
+        {{getSchemaDetail(schema)}}
         <!-- cute / sexy schema bar -->
         <div class="md-list-item-text" layout="column">
           <h4>{{schema.subjectName}}</h4>

@@ -1,7 +1,7 @@
 var angular = require('angular');
 var angularAPP = angular.module('angularAPP');
 
-var SubjectListCtrl = function ($scope, $rootScope, $log, $mdMedia, SchemaRegistryFactory, env) {
+var SubjectListCtrl = function ($scope, $rootScope, $log, $mdMedia, SchemaRegistryFactory, env,$http){
 
   $log.info("Starting schema-registry controller : list ( initializing subject cache )");
 
@@ -48,7 +48,8 @@ var SubjectListCtrl = function ($scope, $rootScope, $log, $mdMedia, SchemaRegist
     var promise = SchemaRegistryFactory.refreshLatestSubjectsCACHE();
     promise.then(function (cachedData) {
       $rootScope.allSchemas = cachedData;
-      addCompatibilityValue();
+      //关闭这个，他会去查询所有的schema的兼容级别
+      // addCompatibilityValue();
     }, function (reason) {
       $log.error('Failed at loadCache : ' + reason);
     }, function (update) {
@@ -56,11 +57,54 @@ var SubjectListCtrl = function ($scope, $rootScope, $log, $mdMedia, SchemaRegist
     });
   }
 
+  //给每页的条数赋值
   var itemsPerPage = (window.innerHeight - 355) / 48;
   Math.floor(itemsPerPage) < 3 ? $scope.itemsPerPage = 3 : $scope.itemsPerPage = Math.floor(itemsPerPage);
+    $rootScope.pagination= {
+        totalData:0,
+        currentPage :1,
+        itemsPerPage:0
+    }
+
+    $rootScope.pagination.itemsPerPage = $scope.itemsPerPage;
+
+
+    $scope.getSchemaDetail = function (schema) {
+        //请求过了
+        if(schema.requested !== undefined && schema.requested){
+            return;
+        }
+        //将请求状态设为ture
+        schema.requested = true;
+
+        // var schemaData =getSchemaByName(schema.subjectName);
+        // schema.version = 12;
+        // schema.id = 1;
+        // 需要在网络上查找
+        var url = env.SCHEMA_REGISTRY() + '/subjects/' + schema.subjectName + '/versions/latest';
+        $http.get(url).then(function(result){
+            // $timeout(function(){
+            //      $scope.apply(function(){
+            var data = result.data;
+            schema.version = data.version // version
+            schema.id = data.id            // id
+            schema.schema = data.schema   // schema - in String - schema i.e. {\"type\":\"record\",\"name\":\"User\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}
+            schema.Schema = JSON.parse(data.schema)// js type | name | doc | fields ...
+            //       });
+            // });
+
+        },function(data){
+            $log.info("error:"+data)
+        });
+
+        $log.info("id:"+schema.id);
+
+    }
+
+
 };
 
-SubjectListCtrl.$inject = ['$scope', '$rootScope', '$log', '$mdMedia', 'SchemaRegistryFactory', 'env'];
+SubjectListCtrl.$inject = ['$scope', '$rootScope', '$log', '$mdMedia', 'SchemaRegistryFactory', 'env','$http'];
 
 angularAPP.controller('SubjectListCtrl', SubjectListCtrl);
 
