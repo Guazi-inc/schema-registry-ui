@@ -401,6 +401,19 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
     return subjectFromCache;
   }
 
+//过滤器
+    function filter(subjectName){
+        //过滤掉不带fact开头的
+        if(subjectName.substr(0,4) == "fact"){
+            //匹配正则表达式 ip
+            var  ip = ".*[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.*";
+                  if(subjectName.search(ip)<0){
+                return true;
+            }
+
+        }
+        return false;
+    }
 
   /**
    *
@@ -492,48 +505,92 @@ var SchemaRegistryFactory = function ($rootScope, $http, $location, $q, $log, Ut
       });
       return deferred.promise;
     },
+    //
+    // /**
+    //  * GETs all subject-names and then GETs the /versions/latest of each one
+    //  *
+    //  * Refreshes the CACHE object with latest subjects
+    //  */
+    // refreshLatestSubjectsCACHE: function () {
+    //
+    //   var deferred = $q.defer();
+    //   var start = new Date().getTime();
+    //
+    //   // 1. Get all subject names
+    //   getSubjects().then(
+    //     function success(allSubjectNames) {
+    //       // 2. Get full details of subject's final versions
+    //       var urlFetchLatestCalls = [];
+    //       angular.forEach(allSubjectNames, function (subject) {
+    //         urlFetchLatestCalls.push($http.get(env.SCHEMA_REGISTRY() + '/subjects/' + subject + '/versions/latest'));
+    //       });
+    //       $q.all(urlFetchLatestCalls).then(function (latestSchemas) {
+    //         CACHE = []; // Clean up existing cache - to replace with new one
+    //         angular.forEach(latestSchemas, function (result) {
+    //           var data = result.data;
+    //           var cacheData = {
+    //             version: data.version,  // version
+    //             id: data.id,            // id
+    //             schema: data.schema,    // schema - in String - schema i.e. {\"type\":\"record\",\"name\":\"User\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}
+    //             Schema: JSON.parse(data.schema), // js type | name | doc | fields ...
+    //             subjectName: data.subject
+    //           };
+    //           CACHE.push(cacheData);
+    //         });
+    //         $log.debug("  pipeline : get-latest-subjects-refresh-cache in [ " + (new Date().getTime() - start) + " ] msec");
+    //         $rootScope.showSpinner = false;
+    //         $rootScope.Cache = CACHE;
+    //         deferred.resolve(CACHE);
+    //       });
+    //     });
+    //
+    //   return deferred.promise;
+    //
+    // },
 
-    /**
-     * GETs all subject-names and then GETs the /versions/latest of each one
-     *
-     * Refreshes the CACHE object with latest subjects
-     */
-    refreshLatestSubjectsCACHE: function () {
+      /**
+       *  我的修改：加载所有的schema的名字，然后创建伪数据
+       */
+      refreshLatestSubjectsCACHE: function () {
 
-      var deferred = $q.defer();
-      var start = new Date().getTime();
+          var deferred = $q.defer();
+          var start = new Date().getTime();
 
-      // 1. Get all subject names
-      getSubjects().then(
-        function success(allSubjectNames) {
-          // 2. Get full details of subject's final versions
-          var urlFetchLatestCalls = [];
-          angular.forEach(allSubjectNames, function (subject) {
-            urlFetchLatestCalls.push($http.get(env.SCHEMA_REGISTRY() + '/subjects/' + subject + '/versions/latest'));
-          });
-          $q.all(urlFetchLatestCalls).then(function (latestSchemas) {
-            CACHE = []; // Clean up existing cache - to replace with new one
-            angular.forEach(latestSchemas, function (result) {
-              var data = result.data;
-              var cacheData = {
-                version: data.version,  // version
-                id: data.id,            // id
-                schema: data.schema,    // schema - in String - schema i.e. {\"type\":\"record\",\"name\":\"User\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}
-                Schema: JSON.parse(data.schema), // js type | name | doc | fields ...
-                subjectName: data.subject
-              };
-              CACHE.push(cacheData);
-            });
-            $log.debug("  pipeline : get-latest-subjects-refresh-cache in [ " + (new Date().getTime() - start) + " ] msec");
-            $rootScope.showSpinner = false;
-            $rootScope.Cache = CACHE;
-            deferred.resolve(CACHE);
-          });
-        });
+          // 1. Get all subject names
+          getSubjects().then(
+              function success(allSubjectNames) {
+                  $rootScope.pagination.totalData = allSubjectNames.length;
+                  $log.info("loadData")
+                  CACHE = []
+                  //制造假数据：
+                  angular.forEach(allSubjectNames, function (subject) {
+                    //过滤掉一些信息
+                      if(!filter(subject)){
+                        return;
+                      };
+                    var cacheData = {
+                          subjectName: subject,
+                          version:"",
+                          id:"",
+                          schema:"",
+                          Schema:"",
+                      };
+                      CACHE.push(cacheData);
+                  });
 
-      return deferred.promise;
 
-    },
+                  $log.debug(" 伪数据生成：[ " + (new Date().getTime() - start) + " ] msec");
+                  $rootScope.showSpinner = false;
+                  $rootScope.Cache = CACHE;
+                  deferred.resolve(CACHE);
+              });
+
+          return deferred.promise;
+
+      },
+
+
+
     /**
      * Get one subject at a particular version
      */

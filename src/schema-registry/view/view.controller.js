@@ -34,14 +34,15 @@ var SubjectsCtrl = function ($rootScope, $scope, $route, $routeParams, $log, $lo
     $scope.isAvroUpdatedAndCompatible = false;
   }, true);
 
-  SchemaRegistryFactory.getSubjectConfig($routeParams.subject).then(
-    function success(config) {
-      $scope.compatibilitySelect = config.compatibilityLevel;
-      $scope.existingValue = config.compatibilityLevel;
-    },
-    function errorCallback(response) {
-      $log.error(response);
-    });
+  //查询某一个subject的兼容级别
+  // SchemaRegistryFactory.getSubjectConfig($routeParams.subject).then(
+  //   function success(config) {
+  //     $scope.compatibilitySelect = config.compatibilityLevel;
+  //     $scope.existingValue = config.compatibilityLevel;
+  //   },
+  //   function errorCallback(response) {
+  //     $log.error(response);
+  //   });
 
   SchemaRegistryFactory.getGlobalConfig().then(
     function success(config) {
