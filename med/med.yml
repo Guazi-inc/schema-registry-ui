@@ -24,6 +24,6 @@ deploy:
   base: schema-build
   command: npm start
   domains: schema
-  rule:
+  rules:
   - name: http
     port: 8080
