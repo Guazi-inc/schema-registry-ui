@@ -1,0 +1,29 @@
+repo:
+  name: schema-registry-ui
+  project: tools
+
+prepare:
+- name: schema-prepare
+  image: library/node:v8.1.2-1.2
+  version: v0.1
+  workdir: /med
+  copy:
+  - package.json /med/package.json
+  run:
+  - npm install && rm -rf /med
+
+build:
+- name: schema-build
+  base: schema-prepare
+  workdir: /med
+  copy:
+  - . /med
+
+deploy:
+- name: deploy
+  base: schema-build
+  command: npm start
+  domains: schema
+  rule:
+  - name: http
+    port: 8080
